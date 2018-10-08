@@ -7,6 +7,7 @@ Created on Thu Oct  4 14:37:43 2018
 import pandas as pd
 import numpy as np
 import math
+import sys
 
 # Functions
 def numeric_features(dataset):
@@ -19,13 +20,13 @@ def numeric_features(dataset):
     numeric_col = []
     for col_name in dataset.columns:
         try:
-            float(dataset[col_name][0])    
+            float(dataset[col_name][0])
             numeric_col.append(col_name)
         except ValueError:
             continue
     return numeric_col
 
-def create_result_df(features, add_info):
+def create_result_df(features, add_info = None):
     """
     Input:
         features(list of str)
@@ -76,20 +77,22 @@ def manual_describe(dataset, add_info = None):
                     _max = val
                 if _min > val:
                     _min = val
-        ordered_list.sort()
-        result_df[col_name]["Count"] = n
-        result_df[col_name]["Mean"] = total/n
-        result_df[col_name]["Max"] = _max
-        result_df[col_name]["Min"] = _min
-        result_df = manual_std(result_df, dataset)
-        result_df[col_name]["25%"] = ordered_list[math.ceil(n/4) - 1]
-        result_df[col_name]["50%"] = ordered_list[math.ceil(n/2) - 1] 
-        result_df[col_name]["75%"] = ordered_list[math.ceil(3*n/4) - 1] 
+        if n == 0:
+            result_df.drop(labels=col_name, axis=1)
+        else:
+            ordered_list.sort()
+            result_df[col_name]["Count"] = n
+            result_df[col_name]["Mean"] = total/n
+            result_df[col_name]["Max"] = _max
+            result_df[col_name]["Min"] = _min
+            result_df = manual_std(result_df, dataset)
+            result_df[col_name]["25%"] = ordered_list[math.ceil(n/4) - 1]
+            result_df[col_name]["50%"] = ordered_list[math.ceil(n/2) - 1] 
+            result_df[col_name]["75%"] = ordered_list[math.ceil(3*n/4) - 1] 
     return result_df
 
 # example
-dataset = pd.read_csv("resources/dataset_train.csv", index_col = "Index")
-result_df = manual_describe(dataset)
-
-
-
+if __name__ == "__main__":
+    dataset = pd.read_csv(sys.argv[1], index_col = "Index")
+    result_df = manual_describe(dataset)
+    print(result_df)
